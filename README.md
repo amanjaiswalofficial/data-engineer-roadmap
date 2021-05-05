@@ -4,3 +4,8 @@ A repository containing all the course demo and examples related to journey in t
 #### Index
  - RatingsCounter
  - FriendsByAge
+ - MinTemperature
+ - MaxTemperature
+ - WordCount
+ - WordCountBetter
+ - WordCountBetterSorted
