@@ -1,5 +1,5 @@
-# journey-in-data-engineering
-A repository containing all the course demo and examples related to journey in the data engineering path
+# data-engineering-resources
+A repository containing all the course demo and examples related to journey in the data engineering path. Feel free to fork
 
 #### Spark With Scala Examples - Index
  - RatingsCounter
