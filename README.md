@@ -18,3 +18,7 @@ A repository containing all the course demo and examples related to journey in t
  - explain() over spark commands
  - Basic operations - in sql vs using dataframes
  - 
+
+
+### Important Questions & Topics from Spark: The Definitive Guide
+ - How does spark do joins ? Big-to-Big, Big-to-Small & Small-to-Small tables ?
