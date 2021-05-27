@@ -92,3 +92,21 @@ val dbDataFrame = spark.read.format("jdbc")
 print(dbDataFrame.show(2))
 
 // COMMAND -----------
+
+
+// More
+// Reading from databases
+// Writing to databases
+// Using partitions while reading
+/*
+Writing with partitioning
+Based on a specific col
+
+csvFile.limit(10).write.mode("overwrite").partitionBy("DEST_COUNTRY_NAME")
+.save("/tmp/partitioned-files.parquet")
+*/
+
+/*
+Bucketing
+*/
+
