@@ -74,6 +74,6 @@ words3.values.collect()
 
 // COMMAND ----------
 
-words3.lookup(1)
+words3.lookup(1) // to read value from a key
 
 
