@@ -29,3 +29,16 @@ A repository containing all the course demo and examples related to journey in t
  - Why to use NoSQL model ? Why not to use NoSQL model ?
  - OLAP ? OLTP ? Difference ?
  - Normalization ? De-normalization ? When to use which ?
+ - Fact and dimension tables
+ - Star and snowflake schema
+ - Eventual Consistency in NoSQL databases
+ - CAP Theorem in NoSQL databases
+ - Primary Key: Partition key and clustering columns(Ex- primary key((year), album_name))
+
+
+### Notes
+ - For any query that is using where on partition key and clustering cols, it must use them
+   first, before applying where on any non-clustering column.
+ - Clustering columns sort the data in desc order, when used multiple sort desc on the first
+   column, then on the second column and so on.
+ - 
