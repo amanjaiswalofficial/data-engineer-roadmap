@@ -252,3 +252,79 @@ Both have same dimensions, only different table representations.
 - Each child non-terminal table uses this primary key as FK to identify data in its parent table
 
 - Terminal table, has no FK
+
+  
+
+### <u>Fact Tables - Theory</u>
+
+Discussed various type of fact tables
+
+#### 1.Transaction fact tables
+
+- Store measurements and similar metrics from data
+
+- Example:
+
+  | tuition payment (a fact) | student_key (FK/surrogate key from student table) | date_key (FK/surrogate key from date table) ?? |
+  | ------------------------ | ------------------------------------------------- | ---------------------------------------------- |
+  | 1000 Rupees              | used instead of student name or anything as such  | same as student                                |
+
+- 2 major rules
+
+  - Both facts should be available at same level
+  - Facts should occur simultaneously
+
+  As long as both these rules apply, as many as needed, facts can be combined together
+
+  Examples:
+
+  1. **BAD**: [tuition bill & tuition payment] (*both dont occur simultaneously*)
+
+  2. **GOOD**: [tuition billed amount & activity billed amount] (same level as well as may be simultaneous)
+
+
+
+#### 2. Periodic Snapshot fact tables
+
+- Record <u>**regular/periodic measurements a**</u>s periodic snapshot of something
+
+- Includes - transactions that can be **some sort of aggregation** over regular transaction as well as those that aren't directly an aggregation
+
+- Example
+
+  1. GOOD:  Canteen Balance tracking
+
+     | Student Key (surrogate key for student's table) | Week Key (another key from different table) | EOW Balance |
+     | ----------------------------------------------- | ------------------------------------------- | ----------- |
+     | ABCDE                                           | 121                                         | 5000        |
+
+- Snapshot fact tables data can be **semi-additive** as well i.e. sometimes it can be added, sometimes it can't be.
+  - Example of such facts - 
+    - Account balance from a student from above table can't be added to a sum balance
+    - But if we lock one of the cols, the average bal. for a specific student over time can be measured.
+    - Similarly, avg of different students can be calculated and compared
+
+#### 3. Accumulating Snapshot fact tables
+
+- Such facts can be used to <u>**measure things like time spent in different phases**</u>
+
+- May include items that are completed as well as items that are still in progress
+
+- Introduces **concept of 1-to-many relationship** between 1 dim and 1 fact table
+
+- Example: **Student application processing**
+
+  | S_Key | Application Submission Date (Date key) | Application 1st processing date (Date key) | Application 2nd processing date (Date key) | Application Submitted By (Employee key) | 1st processing done by (Employee key) | 2nd processing done by (Employee key) |
+  | ----- | -------------------------------------- | ------------------------------------------ | ------------------------------------------ | --------------------------------------- | ------------------------------------- | ------------------------------------- |
+  | 121   | 01062021                               | 10062021                                   | 2002021-                                   | 1ABC                                    | 2BCD                                  | 3DEF                                  |
+  |       |                                        |                                            |                                            |                                         |                                       |                                       |
+
+  Here 3 type of dimensions are used:
+
+  1. **Student**, whose S_Key is used
+  2. **Date**, whose Date key is used in several columns, hence 1-to-many relationship
+  3. **Employee**, who process application, identified by Employee key, in several cols (1-to-many)
+
+- This can include more columns, like total days taken for submission, days for 1st processing etc, which will increment based on the dates in the first columns
+
+- Such type of data can be put under category of Accumulating Snapshot tables
