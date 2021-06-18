@@ -328,3 +328,125 @@ Discussed various type of fact tables
 - This can include more columns, like total days taken for submission, days for 1st processing etc, which will increment based on the dates in the first columns
 
 - Such type of data can be put under category of Accumulating Snapshot tables
+
+#### 4. Factless fact tables
+
+- To <u>**record a transaction that has no measurements**</u>
+
+- Whenever <u>**an event occurs**</u>, we want to **<u>track</u>**, but since there's no such significant metric, we only record its measurement in some way.
+
+- Example: Student webinar registration
+
+  | Student Key | Date Registration Key | Date Scheduled Key | Webinar Key |
+  | ----------- | --------------------- | ------------------ | ----------- |
+  | A123        | 12291900              | 12928492           | ABC         |
+
+  Here, 3 type of dimensions are used:
+
+  1. **Student**: to link the student who registered for the webinar
+  2. **Date**: to track the date when this registration happened, also when this webinar was scheduled, so can also be a 1-to-many kinda relationship
+  3. **Webinar**: to track the webinar and link with registration
+
+  There are **<u>no other columns</u>** in this table <u>except keys to other tables</u>, hence a **factless table** since only used to record a transaction/operation/occurrence
+
+  Can be used for operations like sum(), count() or queries that have some kind of filter over a specific column
+
+  **Alternative**: **<u>Tracking fact</u>**, where a dummy column, with value 1 is also put along with all data, which can be used in operations like sum() later
+
+- A <u>**variant**</u> to the above factless table can be for instances <u>where an event with starting_date and ending_date may occur</u>, so both keys can be part of such fact table
+
+- Example: Student mentor assignment
+
+| Student Key | Mentor Assigned Date | Mentor Removed Date | Mentor Key |
+| ----------- | -------------------- | ------------------- | ---------- |
+|             |                      |                     |            |
+
+### Star vs Snowflake - Fact + Dim
+
+RECAP:
+
+For dim tables: [**Faculty**, **Department**, **College**]
+
+#### In a star schema:
+
+| Faculty Key (PK) | Faculty ID | F_Name | Dept_ID | Dept_Name | College_ID | College_name | Year |
+| ---------------- | ---------- | ------ | ------- | --------- | ---------- | ------------ | ---- |
+|                  |            |        |         |           |            |              |      |
+
+#### In a snowflake schema
+
+| Faculty_Key | Faculty_ID | F_Name | Dept_Key (FK) |
+| ----------- | ---------- | ------ | ------------- |
+|             |            |        |               |
+
+| Dept_Key (PK)/(FK) | Dept_ID | Dept Name | College Key (FK) |
+| ------------------ | ------- | --------- | ---------------- |
+|                    |         |           |                  |
+
+| College Key (PK)/(FK) | College ID | College Name | Year |
+| --------------------- | ---------- | ------------ | ---- |
+|                       |            |              |      |
+
+Comparison Notes
+
+1. In *star schema*, all the 3 levels of hierarchy are in a single dim table **VS** 
+
+   In <u>snowflake schema</u>, 3 different tables
+
+2. *Star schema* uses a single PK and no FK to any table **VS** 
+
+   In <u>snowflake schema</u>, faculty uses a FK to Department and Department uses FK to College. College being the topmost level, have no FK to any other table.
+
+3. In *Star schema*, all relevant information is at a single level **VS** 
+
+   In <u>snowflake schema,</u> it would require several joins to get all relevant information in case of some queries
+
+
+
+In an environment having fact tables as well
+
+#### In a star schema
+
+| Fact_1 | Fact_2 | Faculty_Key (FK) | Some_Other_table_FK |
+| ------ | ------ | ---------------- | ------------------- |
+|        |        |                  |                     |
+
+Having a dim table as
+
+| Faculty Key (PK) | Faculty ID | F_Name | Dept_ID | Dept_Name | College_ID | College_name | Year |
+| ---------------- | ---------- | ------ | ------- | --------- | ---------- | ------------ | ---- |
+|                  |            |        |         |           |            |              |      |
+
+
+
+#### In a snowflake schema
+
+For a snowflake schema for similar fact table as above, instead of storing FKs to all tables in the hierarchy (College PK, Department PK, Faculty PK) -> We can leverage the relationship between them and only use the FK to the lowest level of this hierarchy 
+
+i.e
+
+Fact Table only has FK to Faculty
+
+Faculty can give FK to Department
+
+Department can give FK to College
+
+| Fact_1 | Fact_2 | Faculty_Key (FK) | ...  |
+| ------ | ------ | ---------------- | ---- |
+|        |        |                  |      |
+
+| Faculty_Key (PK)/(FK) | Faculty_ID | F_Name | Dept_Key (FK) |
+| --------------------- | ---------- | ------ | ------------- |
+|                       |            |        |               |
+
+| Dept_Key (PK)/(FK) | Dept_ID | Dept Name | College Key (FK) |
+| ------------------ | ------- | --------- | ---------------- |
+|                    |         |           |                  |
+
+| College Key (PK)/(FK) | College ID | College Name | Year |
+| --------------------- | ---------- | ------------ | ---- |
+|                       |            |              |      |
+
+**Notes: On SQL for fact tables**
+
+ -- PK for transaction fact tables will consist of keys of multiple tables (generally)
