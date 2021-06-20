@@ -361,7 +361,7 @@ Discussed various type of fact tables
 | ----------- | -------------------- | ------------------- | ---------- |
 |             |                      |                     |            |
 
-### Star vs Snowflake - Fact + Dim
+### <u>Star vs Snowflake - Fact + Dim</u>
 
 RECAP:
 
@@ -450,3 +450,213 @@ Department can give FK to College
 **Notes: On SQL for fact tables**
 
  -- PK for transaction fact tables will consist of keys of multiple tables (generally)
+
+
+
+### <u>SCD - Slowly Changing Dimensions</u>
+
+**Requirement**:
+As time passes, data in the tables may change over time, to adapt to changing data. SCD is used
+It updates the database to the recent version of the data based on the type used on it, to ensure the latest data (and/or the previous history of it) is available for analytics and reference.
+
+#### Type - 1 SCD
+
+- In simple words, rewrite the data
+
+- **Technique**: In-place update
+
+- **Impact**: No history maintenance
+
+- **Application**: To correct incorrect values in the database, by updating and getting rid of old values
+
+- **Example**: Correcting birth year in the records
+
+  | Student_Key | Student_ID | Birthdate |
+  | ----------- | ---------- | --------- |
+  | ABC         | 123        | 01/03/19  |
+
+  After applying SCD-1, and updating the specific col's data for specific row
+
+  | Student_Key | Student_ID | Birthdate  |
+  | ----------- | ---------- | ---------- |
+  | ABC         | 123        | 01/03/2000 |
+
+- **Advantage and Disadvantages**
+  - Simplest to use
+  - Used to remove errors in the data
+  - Especially useful when no need to track history
+  - As a side effect, analytics may get impacted due to deleted data. Also, it may require to track errors but since they aren't kept, can't do so in case of SCD-1.
+
+#### Type - 2 SCD
+
+- In simple words, update the row
+
+- **Technique**: The existing row remains as is. Instead a new row is added with similar data as the old one with changes to the columns that occurred which required SCD. Afterwards, the latest row for the previously stored record contains the latest data for this.
+
+- **Impact**: Might rise some complication with reporting/analytics for future records
+
+- **Application**: Ensure all version of the data exist in the database, hence previous analytics will never be impacted
+
+- **Example**: Correcting the birth year
+
+  | Student_Key | Student_ID | Birthdate  |
+  | ----------- | ---------- | ---------- |
+  | ABC         | 123        | 01/03/1990 |
+
+  After applying SCD-2, and creating a new row with correct data
+
+  | Student_Key | Student_ID | Birthdate  |
+  | ----------- | ---------- | ---------- |
+  | ABC         | 123        | 01/03/1990 |
+  | CDE         | 123        | 01/03/2000 |
+
+  As visible, the new record has same **Student_ID** (Natural key, fetched from source), but new **Student_Key** (Primary key, generated at the database level itself), to ensure a unique identifier for the new row.
+
+- **Advantages & Disadvantages**
+
+  - Since all data is always present, irrespective of complications - can be referred for unlimited history.
+  - As a side effect, its much more complex to implement compared to other types
+
+<u>Complications in case of Fact tables</u>
+
+In order to relate the fact of this student, Example: FACT_MARKS
+
+| Student_Key | Student_ID | Marks_In_English |
+| ----------- | ---------- | ---------------- |
+| ABC         | 123        | 89               |
+
+As the dim_table is updated, same can be done with fact for this student
+
+| Student_Key | Student_ID | Marks_In_English |
+| ----------- | ---------- | ---------------- |
+| ABC         | 123        | 89               |
+| CDE         | 123        | 89               |
+
+But, to ensure, this is related to the latest and correct row with Student_ID (123), 2 type of solutions are present
+
+1. Add a flag in dim table, so that previous rows can be flagged to inactive or N in the database
+
+   **Before**
+
+   | Student_Key | Student_ID | Birthdate  | Active |
+   | ----------- | ---------- | ---------- | ------ |
+   | ABC         | 123        | 01/03/1990 | Y      |
+
+   **After**
+
+   | Student_Key | Student_ID | Birthdate  | Active |
+   | ----------- | ---------- | ---------- | ------ |
+   | ABC         | 123        | 01/03/1990 | N      |
+   | CDE         | 123        | 01/03/2000 | Y      |
+
+   This way, using active flag, it can always be used to ensure that the join with fact or FK from fact points to the most correct row for this **Student_ID**
+
+   But even this can become problematic, as multiple updates come for same Student_ID, will result in multiple rows with Active=N, hence not possible to track which was active until when (No time period tracking)
+
+2. As a fix, 2nd solution i.e. Using columns like **effective_date** and **expiry_date** along with data to know which row was the latest until when
+
+   **Before**
+
+   | Student_Key | Student_ID | Birthdate  | effective_date | expiry_date |
+   | ----------- | ---------- | ---------- | -------------- | ----------- |
+   | ABC         | 123        | 01/03/1990 | 01/01/2021     | 31/12/2030  |
+
+   **After**
+
+   | Student_Key | Student_ID | Birthdate  | effective_date | expiry_date |
+   | ----------- | ---------- | ---------- | -------------- | ----------- |
+   | ABC         | 123        | 01/03/1990 | 01/01/2021     | 31/03/2021  |
+   | CDE         | 123        | 01/03/2000 | 01/04/2021     | 31/12/2030  |
+
+   This way, using the 2 columns, it can be used to check which row was active in what time period.
+
+3. A 3rd variant is a combination of using both **Active** and **effective_date/expiry_date**
+
+
+
+#### Type - 3 SCD
+
+- In simple words, update the columns
+
+- **Technique**: Add new columns as new data comes to keep track of data (very limited use-cases)
+
+- **Impact**: Allows to easily switch back between past and present reporting of a column's data
+
+- **Application**: Allows flexible reporting for past and present data based on columns. Hence, useful for reorganizing of data, while keeping the older data as well in the same database
+
+- **Example**: Changing of some column's data permanently in the future. Like, changing marks from integers to grades 
+
+  Previously
+
+  | Student_Key | Student_ID | Marking |
+  | ----------- | ---------- | ------- |
+  | ABC         | 123        | 79      |
+
+  Now, as the marking changed, simply a new column can be added and old column's name can be updated to
+
+  | Student_Key | Student_ID | New_Marking | Old_Marking |
+  | ----------- | ---------- | ----------- | ----------- |
+  | ABC         | 123        | B           | 79          |
+
+- **Advantages & Disadvantages**
+
+  - Easy to use compared to SCD-2
+  - Can have more than 2 columns like that depending on use cases. Example:
+    **1st_Marking**: 1-100 (int)
+    **2nd_Marking**: A-F (grades)
+    **3rd_Marking**: Group A, Group B, Group C (groups)
+  - As <u>a side effect</u>, can't add too many changes like this. In that case, prefer using SCD-2. 
+  - Also, only applicable when such a change is for all the rows in the database and not specific to some rows.
+
+
+
+### <u>ETL Design Guidelines</u>
+
+#### Basic Tips
+
+1. Limit the data that ETL brings from source to DWH. Tips include:
+   1. Using incremental approach
+   2. Checking the last date when the ETL was successful and only bring data that's post that date, i.e. having a timestamp like column over source at least to identify records post a specific date
+   3. Other ways include: Using scan and compare between the 2 tables i.e. source and DWH's table
+2. Process dim tables before fact tables
+3. Find whenever parallel processing can be utilized
+
+#### Steps For ETL
+
+1. Data preparation [*getting only as much as data as required, i.e. incremental/compared*]
+
+2. Data transformation [*Using 1 of the 6 transformation techniques: De-duplication/unification etc*]
+
+3. Process new dimension rows [*Append*]
+
+4. Process SCD type-1 rows [*Data that require correction, or* *in-place update*] (DIM TABLES)
+
+5. Process SCD type-2 rows [*Append data with new surrogate keys*] (DIM TABLES)
+
+6. While updating fact tables, the dim data the fact table refer to may be multiple (post scd-2, there can be multiple rows for same ID (*natural key of source data*)).
+
+    Hence every new fact row should have
+
+   1. The fact data
+   2. The ID value for the dim table
+   3. A col with date value to identify in which dim row's effective_date/expiry_date it occurs with
+
+**Question**:  Why SCD type-1 before SCD type-2?
+
+### <u>Cloud Data Warehousing</u>
+
+Major **advantages** of using DWH over cloud
+
+- Lower platform investment
+- Disaster recovery
+- Easier sync with cloud data lakes
+
+Major **challenges** with Cloud Data WH
+
+- Limited security control
+- Migration from 1 type of cloud to another
+- Migration of existing on-premise DWH to cloud DWH
+
+
+
+## Think Dimensional
