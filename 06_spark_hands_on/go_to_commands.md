@@ -21,6 +21,7 @@ Other Reading Options
 .option("inferSchema", "true")
 .schema(staticSchema)
 .option("maxFilesPerTrigger", 1)
+.coalesce(INTEGER NUMBER)
 ```
 
 Print/Display/Collect
@@ -33,24 +34,6 @@ df.[SOME_METHOD].limit(5)[.show()] // To limit no. of rows to be passed forward
 df.printSchema() // Print schema of the loaded dataframe
 df.columns // Print Array[] of schema of the dataframe
 df.describe() // Basic stats about data
-```
-
-Defining Custom schema while reading
-
-```scala
-// 1st type
-case class CustomSchema(COL_NAME_1: String, COL_NAME_2: Int, COL_NAME_3...)
-val df = spark.read.format("csv").load(PATH)
-val dfWithSchema = df.as[CustomSchema]
-
-// 2nd type of schema
-import org.apache.spark.sql.types.{StructField, StructType, StringType, LongType}
-val myManualSchema = 
-StructType(Array(
-StructField("COL_NAME_1", StringType, true),
-StructField("COL_NAME_2", StringType, true),
-StructField("COL_NAME_3", LongType, false)))
-val df = spark.read.format("csv").schema(myManualSchema)
 ```
 
 Write to a format on disk
@@ -101,11 +84,25 @@ simpleColors.take(5)
 simpleColors.map(_.toUpperCase)
 ```
 
+Aggregation on Dataframes
 
+```scala
+df.count() //  count no. of records
 
-### Dataframe SQL Methods
+import org.apache.spark.sql.functions.countDistinct
+df.select(countDistinct("City")) // distinct records for a particular column 
 
-### Dataset API and related functions
+import org.apache.spark.sql.functions.{first, last, min, max, sum}
+df.select(first("Rating").alias("First Rating"), last("Rating"), min("Rating"), max("Rating"))
+
+df.groupBy("Customer type").count() // group by
+
+// all 3 will return same response
+import org.apache.spark.sql.functions._
+df.groupBy("Rating").count()
+df.groupBy("Rating").agg(count("Rating"))
+df.groupBy("Rating").agg(expr("count(Rating)")).show(5)
+```
 
 Using col
 
@@ -166,6 +163,97 @@ spark.range(1, 20).createOrReplaceTempView("tempData")
 spark.sql("select square(id) from tempData").show()
 ```
 
+Joins in dataframes
+
+```scala
+val person = Seq((0, "Aman Jaiswal", 1), (1, "Amit Kanderi", 1),  (2, "Arun Pratap", 2), (3, "Amit Dubey", 3)).toDF("id", "name", "subject_id")
+val subjects = Seq((1, "Science"), (2, "Physics"), (3, "Chemistry"), (4, "Computer Science")).toDF("sub_id", "sub_name")
+val classes = Seq((0, "X"), (1, "XI"), (2, "XII")).toDF("id", "class_name")
+
+person.createOrReplaceTempView("personTable")
+subjects.createOrReplaceTempView("subjectTable")
+classes.createOrReplaceTempView("classTable")
+
+val joinBetween = person("subject_id") === subjects("sub_id")
+val joinBetween2 = person("id") === classes("id")
+person.join(subjects, joinBetween, "left")
+// IS SAME AS
+spark.sql("select * from personTable join subjectTable on subjectTable.sub_id=personTable.subject_id")
+
+person.join(classes, joinBetween2, "right")
+
+// other joins
+// left semi right semi left outer right outer
+```
+
+### Dataframe SQL Methods
+
+### Dataset API and related functions
+
+Converting from dataframe to dataset (strict_type dataframes)
+
+```scala
+// 1st type
+case class CustomSchema(COL_NAME_1: String, COL_NAME_2: Int, COL_NAME_3...)
+val df = spark.read.format("csv").load(PATH)
+val dfWithSchema = df.as[CustomSchema]
+
+// 2nd type of schema
+import org.apache.spark.sql.types.{StructField, StructType, StringType, LongType}
+val myManualSchema = 
+StructType(Array(
+StructField("COL_NAME_1", StringType, true),
+StructField("COL_NAME_2", StringType, true),
+StructField("COL_NAME_3", LongType, false)))
+val df = spark.read.format("csv").schema(myManualSchema)
+```
+
+Creating Data frame from file - Example 2
+
+```scala
+val df = spark.read.option("header", "true").option("inferSchema" , "true").csv("PATH/sample_data.csv")
+case class SampleDataSchema(id: Int,first_name: String,last_name: String,email: String,gender: String,ip_address: String)
+val sampleData = df.as[SampleDataSchema]
+```
+
+Aggregation functions and custom functions over dataset
+
+```scala
+def isEntryMale(data: SampleDataSchema): Boolean = {
+  return data.gender == "Male"
+  
+}
+
+sampleData.filter(dataItem => isEntryMale(dataItem))
+sampleData.map(dataItem => (dataItem.id, dataItem.first_name))
+sampleData.groupByKey(x => x.gender).count().show()
+```
+
+Join with dataset
+
+```scala
+case class GenderSchema(id: Int,full_name: String,code_name: String)
+val genderDF = Seq((0, "Male", "M"), (1, "Female", "F"), (2, "Transgender", "T")).toDF("id", "full_name", "code_name")
+val genderData = genderDF.as[GenderSchema]
+
+val joinCondition = sampleData.col("gender") === genderData.col("full_name")
+val joinResponse = sampleData.joinWith(genderDF, joinCondition).withColumnRenamed("_1", "dataCol").withColumnRenamed("_2", "genderCol")
+
+//joinResponse.selectExpr("dataCol.id").show(5)
+joinResponse.selectExpr("dataCol.id","genderCol.code_name").show(5)
+```
+
+Similarly Join with a data frame is also possible
+
+```scala
+val df2 = df.toDF()
+df2.join(OTHER_DF, CONDITION, "join_type")
+```
+
+
+
+
+
 ### RDD operations
 
 
@@ -177,8 +265,10 @@ spark.sql("select square(id) from tempData").show()
 spark.conf.set("spark.sql.shuffle.partitions", "5")
 // ROWS In Spark
 // Using Regex with spark values
-// Create custom dataframe
 // Test na handling methods
 // Create complex fields
 // Applying functions on columns like UDF
+// Using Window functions
+// RDD vs DF vs DS
 ```
+
