@@ -20,8 +20,10 @@ Other Reading Options
 ```scala
 .option("inferSchema", "true")
 .schema(staticSchema)
+.option("sep", ";")
 .option("maxFilesPerTrigger", 1)
 .coalesce(INTEGER NUMBER)
+.option("multiLine", true) // especially to read multiline json Ex- not like {"": ""} in 1 line
 ```
 
 Print/Display/Collect
@@ -42,6 +44,23 @@ Write to a format on disk
 val PATH = ""
 df.write.json(PATH)
 ```
+
+Enable option to ignore corrupt files while reading data from path/paths
+
+```scala
+spark.sql("set spark.sql.files.ignoreCorruptFiles=true")
+
+// will ignore content of dir2 if it contains corrupted file and still make
+// df out of content that isn't corrupt
+val testCorruptDF = spark.read.parquet(
+  "examples/src/main/resources/dir1/",
+  "examples/src/main/resources/dir1/dir2/")
+
+// similar option: spark.sql.files.ignoreMissingFiles
+// also, read: recursive look up
+```
+
+
 
 ### Common Dataframe related methods
 
@@ -186,6 +205,14 @@ person.join(classes, joinBetween2, "right")
 // left semi right semi left outer right outer
 ```
 
+Using globalview
+
+```scala
+createGlobalView("") // something that persists over multiple spark sessions
+```
+
+
+
 ### Dataframe SQL Methods
 
 ### Dataset API and related functions
@@ -270,5 +297,9 @@ spark.conf.set("spark.sql.shuffle.partitions", "5")
 // Applying functions on columns like UDF
 // Using Window functions
 // RDD vs DF vs DS
+// Bucketing/Partitioning By
 ```
 
+https://www.dbta.com/Editorial/Trends-and-Applications/Spark-and-the-Fine-Art-of-Caching-119305.aspx
+
+https://spark.apache.org/docs/latest/sql-performance-tuning.html
