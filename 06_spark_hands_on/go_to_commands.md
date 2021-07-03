@@ -23,6 +23,8 @@ Other Reading Options
 .option("sep", ";")
 .option("maxFilesPerTrigger", 1)
 .coalesce(INTEGER NUMBER)
+.option("sep", "\t")
+.option("mode", "FAILFAST")
 .option("multiLine", true) // especially to read multiline json Ex- not like {"": ""} in 1 line
 ```
 
@@ -36,6 +38,12 @@ df.[SOME_METHOD].limit(5)[.show()] // To limit no. of rows to be passed forward
 df.printSchema() // Print schema of the loaded dataframe
 df.columns // Print Array[] of schema of the dataframe
 df.describe() // Basic stats about data
+```
+
+Writing to a tsv file
+
+```scala
+df.write.format("csv").mode("overwrite").option("sep", "\t").save("./tmp.tsv")
 ```
 
 Write to a format on disk
@@ -168,7 +176,7 @@ Handling null values
 df.na.drop()
 df.na.drop("any") // ("all")
 df.na.fill("")
-df.na.replace("")
+df.na.replace("COL_NAME", ImmutableMap.of(previous_val, new_val))
 ```
 
 UDF (Implementation with Spark SQL)
@@ -283,6 +291,76 @@ df2.join(OTHER_DF, CONDITION, "join_type")
 
 ### RDD operations
 
+Different ways to create RDD
+
+```scala
+val myRDD = sc.parallelize(Array("Monday", "Tuesday", "Wednesday", "Thursday", "Friday"), 2)
+
+val myRDDByFile = spark.read.textFile("E:/Projects/data-engineering-learning-path/06_spark_hands_on/dummyFileForRdd.txt")
+
+val myRDDFromAnotherRDD = myRDD.map(singleDay => (singleDay.charAt(0), singleDay))
+```
+
+Print content from RDD
+
+```scala
+myRDD.collect().foreach(println)
+myRDD.show()
+myRDD.take(5).foreach(println)
+```
+
+Convert RDD out of a dataset
+
+```scala
+val myRDDasRDD = myRDD.rdd
+```
+
+Read particular column of a RDD
+
+```scala
+val myRDDByFile = spark.read.textFile("E:/Projects/data-engineering-learning-path/06_spark_hands_on/sample_data.csv")
+
+// using split to read a specific column (convert from DS to RDD if needed)
+val firstNames = myRDDByFile.map(_.split(",")(1))
+```
+
+Similar operations on RDD
+
+```scala
+// basic word count example
+val nameOccurenceCount = firstNames.map(name => (name, 1)).reduceByKey((x,y) => x+y).map(item => (item._2, item._1)).sortByKey(false)
+
+val uniqueNames = nameOccurenceCount.map(item => (item._2))
+
+uniqueNames.filter(item => item != "Seline") // only those items which arent seline
+uniqueNames.filter(item => item == "Seline") // only those which are seline
+```
+
+Union/Actions in RDD
+
+```scala
+val rowHasSeline = myRDDByFile.filter(item => item.contains("Seline")).rdd
+val rowHasZach = myRDDByFile.filter(item => item.contains("Zacherie")).rdd
+rowHasZach.union(rowHasSeline).collect.foreach(println)
+```
+
+Extract header and remaining data from an RDD file
+
+```scala
+val myRDDCol = myRDDByFile.first()
+val myRDDData = myRDDByFile.filter(item => !item.equals(myRDDCol))
+
+// extract specific columns into a tuple
+myRDDData.map(item => item.split(",")).map(item2 => (item2(1), item2(2)))
+
+// extract specific columns into a tuple 2
+myRDDData.map(item => item.split(",")).map(item2 => (item2(1), item2(2), item2(3)))
+```
+
+
+
+
+
 
 ### Basic ETL Example
 
@@ -298,6 +376,12 @@ spark.conf.set("spark.sql.shuffle.partitions", "5")
 // Using Window functions
 // RDD vs DF vs DS
 // Bucketing/Partitioning By
+// Parallelize, usage?
+// Checkpointing
+// Using partitions while reading
+// Writing with partitioning Based on a specific col
+csvFile.limit(10).write.mode("overwrite").partitionBy("DEST_COUNTRY_NAME").save("/tmp/partitioned-files.parquet")
+// coalesce and repartition for RDD
 ```
 
 https://www.dbta.com/Editorial/Trends-and-Applications/Spark-and-the-Fine-Art-of-Caching-119305.aspx
