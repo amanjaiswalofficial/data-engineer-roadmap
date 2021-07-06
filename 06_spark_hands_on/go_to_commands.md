@@ -357,7 +357,35 @@ myRDDData.map(item => item.split(",")).map(item2 => (item2(1), item2(2)))
 myRDDData.map(item => item.split(",")).map(item2 => (item2(1), item2(2), item2(3)))
 ```
 
+Transformations in RDD
 
+```scala
+import org.apache.spark.rdd.RDD
+val rdd:RDD[String] = spark.read.textFile(PATH).rdd
+
+val mapOnRdd = rdd.map(item => (item, item.length)) // (ABC, 3) (DEFG, 4)..
+
+val mapPartitionOnRdd = rdd.mapPartitions(iterator => (iterator.map(item => (item, item.length))))
+
+// map() vs mapByPartition() vs mapByPartitionIndex()
+
+val rddDistinct  = rdd.distinct()
+
+val data = sc.parallelize(Array(('k',5),('s',3),('s',4),('p',7),('p',5),('t',8),('k',6)),3)
+
+data.groupByKey()     // ('k', (5,6))...
+data.reduceByKey(_+_) // ('k', 11)
+data.reduceByKey(_*_) // ('k', 30)
+
+val data = spark.sparkContext.parallelize(Seq(("maths",52), ("english",75), ("science",82), ("computer",65), ("maths",85)))
+
+data.sortByKey()
+
+// join(), union(), intersection()
+
+rdd.repartition(NUM) // increase or decrease number of partitions
+rdd.coalesce(NUM) // only decrease the number of partitions
+```
 
 
 
@@ -381,7 +409,6 @@ spark.conf.set("spark.sql.shuffle.partitions", "5")
 // Using partitions while reading
 // Writing with partitioning Based on a specific col
 csvFile.limit(10).write.mode("overwrite").partitionBy("DEST_COUNTRY_NAME").save("/tmp/partitioned-files.parquet")
-// coalesce and repartition for RDD
 ```
 
 https://www.dbta.com/Editorial/Trends-and-Applications/Spark-and-the-Fine-Art-of-Caching-119305.aspx
