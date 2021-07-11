@@ -22,9 +22,9 @@ Other Reading Options
 .schema(staticSchema)
 .option("sep", ";")
 .option("maxFilesPerTrigger", 1)
-.coalesce(INTEGER NUMBER)
+.coalesce(INTEGER NUMBER) // 
 .option("sep", "\t")
-.option("mode", "FAILFAST")
+.option("mode", "FAILFAST") //  doesnt fail on loading data, but when an action called and on evalutating, reaches a bad row
 .option("multiLine", true) // especially to read multiline json Ex- not like {"": ""} in 1 line
 ```
 
@@ -64,7 +64,7 @@ val testCorruptDF = spark.read.parquet(
   "examples/src/main/resources/dir1/",
   "examples/src/main/resources/dir1/dir2/")
 
-// similar option: spark.sql.files.ignoreMissingFiles
+// similar option: spark.sql.files.ignoreMissingFiles // when set to false, will raise error, otherwise simply return null as response
 // also, read: recursive look up
 ```
 
@@ -166,6 +166,9 @@ val dateDF = spark.range(5)
 import org.apache.spark.sql.functions.{date_add, date_sub}
 dateDF.select(date_sub($"today", 3)).show(5)
 
+// to_date(col_name, p	attern)
+// weekofyear(col_name)
+
 // similar methods
 // date_add, datediff, month_between etc
 ```
@@ -177,6 +180,7 @@ df.na.drop()
 df.na.drop("any") // ("all")
 df.na.fill("")
 df.na.replace("COL_NAME", ImmutableMap.of(previous_val, new_val))
+df.na.drop(Seq("Date")).count() // drop rows having null at specific column
 ```
 
 UDF (Implementation with Spark SQL)
@@ -210,7 +214,10 @@ spark.sql("select * from personTable join subjectTable on subjectTable.sub_id=pe
 person.join(classes, joinBetween2, "right")
 
 // other joins
-// left semi right semi left outer right outer
+// leftsemi (only allow columns from left in result)
+// rightsemi (only columns from right)
+// left outer (all values of left) 
+// right outer (all values of right)
 ```
 
 Using globalview
