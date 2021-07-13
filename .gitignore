@@ -3,3 +3,6 @@
 01_spark_with_scala_examples/.bsp
 04_udacity_data_engineering/venv/*
 04_udacity_data_engineering/.vscode/
+07_pyspark_demos/venv
+.vscode
+07_pyspark_demos/.vscode

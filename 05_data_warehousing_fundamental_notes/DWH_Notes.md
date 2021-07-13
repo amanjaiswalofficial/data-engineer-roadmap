@@ -68,6 +68,10 @@ Data Sources >>>> **ETL** >>>> DWH >>>> **ETL** >>>> [Cubes] being used as data 
 - Similar to DWH, as integrates data from several sources
 - But different in the sense, that it focuses more on current operational data
 - Hence, often, real-time source are used for ODS to get data in that manner instead of a batch or period wise update as done in DWH
+- An operational data store (ODS) is a central database that provides a  snapshot of the latest data from multiple sources to enable organization to combine data into a single destination to make it available for business reporting.
+- Major difference b/w ODS and DW is that ODS is a current/recent (hence volatile) snapshot of data from multiple sources whereas DW is also historical/auditable (hence non-volatile) record of data from multiple sources.
+- So, DW has an enterprise scope of data stored in it whereas an ODS is more as a partial scope of the data it stores.
+- ODS may sit between Sources and DWH itself, where DWS is more historical. ODS is more into containing current values and not historical
 
 
 
