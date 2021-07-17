@@ -161,7 +161,7 @@ A dimension context can be provided to any measurement:
 
 
 
-Examples:
+Examples:2
 
 - 2000 Rupees (Measurement) - Salary of a person grouped by month (Dimension context)
 - Questions including By/For
@@ -290,7 +290,7 @@ Discussed various type of fact tables
 
 #### 2. Periodic Snapshot fact tables
 
-- Record <u>**regular/periodic measurements a**</u>s periodic snapshot of something
+- Record <u>**regular/periodic measurements**</u> as periodic snapshot of something
 
 - Includes - transactions that can be **some sort of aggregation** over regular transaction as well as those that aren't directly an aggregation
 
