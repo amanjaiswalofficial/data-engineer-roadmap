@@ -12,7 +12,7 @@ mysql = (
     .option("password", "root")
 )
 
-tables = ["test0", "test1", "test2"]
+tables = ["test1", "test2"]
 table_conn = list()
 
 for table in tables:
