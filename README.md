@@ -1,49 +1,21 @@
-# data-engineering-resources
-A repository containing all the course demo and examples related to journey in the data engineering path. Feel free to fork
+# Data Engineer Roadmap
 
-#### Spark With Scala Examples - Index
- - RatingsCounter
- - FriendsByAge
- - MinTemperature
- - MaxTemperature
- - WordCount
- - WordCountBetter
- - WordCountBetterSorted
- - PopularMovies
- - PopularMoviesNicer
+The repository contains my journey in the domain. It contains not only my personal notes in different subjects but also useful links, resources and course/book recommendations that one can make use of while entering in the field. I'll make sure to keep on updated with everything new that I learn
 
+Feel free to fork!
 
-#### Spark: The Definitive Guide - Index
- - Loading data from CSV
- - explain() over spark commands
- - Basic operations - in sql vs using dataframes
- - 
+Contributions are welcome
 
+## Content
 
-### Important Questions & Topics from Spark: The Definitive Guide
- - How does spark do joins ? Big-to-Big, Big-to-Small & Small-to-Small tables ?
+### Books
 
+[Spark: The Definitive Guide](https://www.amazon.com/Spark-Definitive-Guide-Bill-Chambers/dp/1491912219-)
 
-### Udacity Data Engineering Nanodegree Notes
-#### Introduction To Relational Databases
- - Why to use relational model ? Why not to use relational model ?
- - Why to use NoSQL model ? Why not to use NoSQL model ?
- - OLAP ? OLTP ? Difference ?
- - Normalization ? De-normalization ? When to use which ?
- - Fact and dimension tables
- - Star and snowflake schema
- - Eventual Consistency in NoSQL databases
- - CAP Theorem in NoSQL databases
- - Primary Key: Partition key and clustering columns(Ex- primary key((year), album_name))
+A great book for all people who want to start learning Spark. It not only gives you an extensive idea about how Spark works, but also explains how it came into existence in the first place. With code snippets in both Python and Scala, it's a must-read book for any Data Engineer/Data Scientist who's into Spark or Distributed Computing.
 
-#### Cassandra Notes
- - For any query that is using where on partition key and clustering cols, it must use them
-   first, before applying where on any non-clustering column.
- - Clustering columns sort the data in desc order, when used multiple sort desc on the first
-   column, then on the second column and so on.
+### Repository Index
 
-### ETL and Data warehouses
- - Data warehouse - Business & Technical Perspectives
- - DWH Architectures
- - OLAP Cubes
- 
+#### Data Warehousing
+
+- Data Warehousing Notes

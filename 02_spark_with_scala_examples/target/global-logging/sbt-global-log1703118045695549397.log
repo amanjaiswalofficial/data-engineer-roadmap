@@ -1,9 +1,0 @@
-[debug] > Exec(package, None, None)
-[debug] Evaluating tasks: Compile / package
-[debug] Running task... Cancel: Signal, check cycles: false, forcegc: true
-[warn] There may be incompatibilities among your library dependencies; run 'evicted' to see detailed eviction warnings.
-[info] compiling 10 Scala sources to E:\Projects\journey-in-data-engineering\01_spark_with_scala_examples\target\scala-2.12\classes ...
-[info] done compiling
-[warn] multiple main classes detected: run 'show discoveredMainClasses' to see the list
-[success] Total time: 6 s, completed 13 May, 2021 11:46:52 PM
-[debug] > Exec(idea-shell, None, None)
