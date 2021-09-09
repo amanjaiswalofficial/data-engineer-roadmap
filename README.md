@@ -10,7 +10,7 @@ Contributions are welcome
 
 ### Books
 
-[Spark: The Definitive Guide](https://www.amazon.com/Spark-Definitive-Guide-Processing-Simple/dp/1491912219/ref=sr_1_1?dchild=1&keywords=spark+the+definitive+guide&qid=1631202101&sr=8-1)
+[Spark: The Definitive Guide](https://www.amazon.com/Spark-Definitive-Guide-Processing-Simple/dp/1491912219)
 
 A great book for all people who want to start learning Spark. It not only gives you an extensive idea about how Spark works, but also explains how it came into existence in the first place. With code snippets in both Python and Scala, it's a must-read book for any Data Engineer/Data Scientist who's into Spark or Distributed Computing.
 
